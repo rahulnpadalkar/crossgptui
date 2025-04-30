@@ -20,9 +20,14 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@extension/env": "workspace:*",
     "@extension/shared": "workspace:*",
     "@extension/storage": "workspace:*",
-    "@extension/env": "workspace:*"
+    "cash-dom": "^8.1.5",
+    "date-fns": "^4.1.0",
+    "dexie": "^4.0.11",
+    "flexsearch": "^0.8.143",
+    "terser": "^5.39.0"
   },
   "devDependencies": {
     "@extension/hmr": "workspace:*",

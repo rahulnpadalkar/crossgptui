@@ -1,19 +1,70 @@
-import { useEffect } from 'react';
-import { ToggleButton } from '@extension/ui';
-import { exampleThemeStorage } from '@extension/storage';
-import { t } from '@extension/i18n';
+import { useEffect, useState } from 'react';
+import { AddTags } from './AddTags';
+import { ExpandCollapseButton } from './ExpandCollapse';
+import { Search } from './modals/Search';
+import { OrganizedWithTags } from './OrganizedWithTags';
+import { PinnedChats } from './PinnedChats';
+import { Images } from './modals/Images';
+import { DownloadAction } from './modals/DownloadAudio';
+import { ExportChat } from './ExportChat';
+import { OrganizeFolders } from './modals/OrganizeFolders';
+
+const chatRegex = /https:\/\/chatgpt\.com(?:\/g\/g-p-[a-z0-9-]+\/c|\/c)\/[a-z0-9-]+/;
+
+const BASE_URL = 'https://app.supergpt.chat';
 
 export default function App() {
+  const [onChat, setOnChat] = useState<boolean>(false);
+  const [paid, setPaid] = useState<boolean>(false);
+
   useEffect(() => {
-    console.log('content ui loaded');
+    setInterval(isOnChatScreen, 500);
+    setTimeout(isPaidUser, 2000);
   }, []);
 
+  const isPaidUser = async () => {
+    const { userEmail } = await chrome.storage.local.get('userEmail');
+
+    const res = await fetch(`${BASE_URL}/user/valid`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: userEmail }),
+    });
+    const { valid } = await res.json();
+    setPaid(valid ?? false);
+  };
+
+  const isOnChatScreen = () => {
+    const currURL = window.location.href;
+    const onChatScreen = chatRegex.test(currURL);
+    if (onChatScreen) {
+      setOnChat(true);
+    } else {
+      setOnChat(false);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-between gap-2 rounded bg-blue-100 px-2 py-1">
-      <div className="flex gap-1 text-blue-500">
-        Edit <strong className="text-blue-700">pages/content-ui/src/app.tsx</strong> and save to reload.
+    <div className="flex" style={{ justifyContent: 'flex-end' }}>
+      <div
+        className="flex flex-col"
+        style={{ marginTop: '5rem', marginRight: '2rem', pointerEvents: 'auto', maxWidth: '17rem', width: '17rem' }}>
+        {onChat && (
+          <>
+            <ExpandCollapseButton />
+            <AddTags />
+            <PinnedChats withLimits={!paid} />
+            <DownloadAction />
+          </>
+        )}
+        <OrganizeFolders withLimits={!paid} />
+        <ExportChat withLimits={!paid} />
+        <OrganizedWithTags withLimits={!paid} />
+        <Images />
+        <Search withLimits={!paid} />
       </div>
-      <ToggleButton onClick={exampleThemeStorage.toggle}>{t('toggleTheme')}</ToggleButton>
     </div>
   );
 }

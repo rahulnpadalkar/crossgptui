@@ -15,6 +15,7 @@ export default withPageConfig({
   plugins: [IS_DEV && makeEntryPointPlugin()],
   publicDir: resolve(rootDir, 'public'),
   build: {
+    minify: 'terser',
     lib: {
       name: 'contentUI',
       fileName: 'index',

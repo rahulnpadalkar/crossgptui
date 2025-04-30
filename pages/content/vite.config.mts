@@ -15,6 +15,7 @@ export default withPageConfig({
   publicDir: resolve(rootDir, 'public'),
   plugins: [IS_DEV && makeEntryPointPlugin()],
   build: {
+    minify: false,
     lib: {
       name: 'ContentScript',
       fileName: 'index',

@@ -23,15 +23,34 @@
   },
   "dependencies": {
     "@extension/env": "workspace:*",
+    "@extension/i18n": "workspace:*",
     "@extension/shared": "workspace:*",
     "@extension/storage": "workspace:*",
     "@extension/ui": "workspace:*",
-    "@extension/i18n": "workspace:*"
+    "@mantine/core": "^7.17.2",
+    "@mantine/hooks": "^7.17.2",
+    "@minoru/react-dnd-treeview": "^3.5.0",
+    "@uidotdev/usehooks": "^2.4.1",
+    "date-fns": "^4.1.0",
+    "dexie": "^4.0.11",
+    "flexsearch": "^0.8.143",
+    "lodash": "^4.17.21",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-icons": "^5.5.0",
+    "react-markdown": "^10.1.0",
+    "react-window": "^1.8.11",
+    "remove-markdown": "^0.6.0"
   },
   "devDependencies": {
     "@extension/hmr": "workspace:*",
     "@extension/tailwindcss-config": "workspace:*",
     "@extension/tsconfig": "workspace:*",
-    "@extension/vite-config": "workspace:*"
+    "@extension/vite-config": "workspace:*",
+    "@types/lodash": "^4.17.16",
+    "@types/react-window": "^1.8.8",
+    "postcss": "^8.5.2",
+    "postcss-preset-mantine": "^1.17.0",
+    "postcss-simple-vars": "^7.0.1"
   }
 }

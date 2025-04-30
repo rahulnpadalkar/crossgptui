@@ -1,34 +1,76 @@
 import { createRoot } from 'react-dom/client';
 import App from '@src/App';
+// import tailwindcssOutput from '../dist/tailwind-output.css?inline';
 // @ts-expect-error Because file doesn't exist before build
-import tailwindcssOutput from '../dist/tailwind-output.css?inline';
+import styles from '@mantine/core/styles.css?inline';
+// @ts-expect-error Because file doesn't exist before build
+import customStyles from './custom.css?inline';
+import { Index } from 'flexsearch';
+import type { CSSVariablesResolver } from '@mantine/core';
 
-const root = document.createElement('div');
-root.id = 'chrome-extension-boilerplate-react-vite-content-view-root';
+import { MantineProvider } from '@mantine/core';
+import { getAllMessages } from './db';
+import { getTheme } from './utils';
 
-document.body.append(root);
+const appendReactApp = () => {
+  const root = document.createElement('div');
+  root.id = 'chatgpt-better-ui';
+  root.style.position = 'absolute';
+  root.style.right = '0px';
+  root.style.bottom = '0px';
+  root.style.width = '100%';
+  root.style.height = '100%';
+  root.style.pointerEvents = 'none';
 
-const rootIntoShadow = document.createElement('div');
-rootIntoShadow.id = 'shadow-root';
+  document.body.append(root);
 
-const shadowRoot = root.attachShadow({ mode: 'open' });
+  const styleTag = document.createElement('style');
+  styleTag.innerHTML = styles;
 
-if (navigator.userAgent.includes('Firefox')) {
-  /**
-   * In the firefox environment, adoptedStyleSheets cannot be used due to the bug
-   * @url https://bugzilla.mozilla.org/show_bug.cgi?id=1770592
-   *
-   * Injecting styles into the document, this may cause style conflicts with the host page
-   */
-  const styleElement = document.createElement('style');
-  styleElement.innerHTML = tailwindcssOutput;
-  shadowRoot.appendChild(styleElement);
-} else {
-  /** Inject styles into shadow dom */
-  const globalStyleSheet = new CSSStyleSheet();
-  globalStyleSheet.replaceSync(tailwindcssOutput);
-  shadowRoot.adoptedStyleSheets = [globalStyleSheet];
-}
+  const customCSS = document.createElement('style');
+  customCSS.innerHTML = customStyles;
 
-shadowRoot.appendChild(rootIntoShadow);
-createRoot(rootIntoShadow).render(<App />);
+  document.head.appendChild(styleTag);
+  document.head.appendChild(customCSS);
+
+  const gptTheme = getTheme();
+
+  const resolver: CSSVariablesResolver = theme => ({
+    variables: {},
+    light: {
+      '--mantine-button-background-color': theme.colors.gray[3],
+      '--mantine-text-selected': '#000',
+      '--mantine-message-action-button': '#5d5d5d',
+      '--mantine-hover-background': '#ececec',
+      '--maintine-button-text': '#000',
+      '--mantine-button-modal-bg-color': '#000',
+      '--mantine-button-modal-color': '#fff',
+    },
+    dark: {
+      '--mantine-button-background-color': '#ffffff12',
+      '--mantine-text-selected': '#fff',
+      '--mantine-subtext-muted': '#606060',
+      '--mantine-title-muted': '#a8a8a8',
+      '--mantine-hover-background': '#2f2f2f',
+      '--mantine-message-action-button': '#f3f3f3',
+      '--mantine-button-modal-bg-color': '#fff',
+      '--mantine-button-modal-color': '#000',
+      '--maintine-button-text': '#fff',
+    },
+  });
+
+  createRoot(root).render(
+    <MantineProvider defaultColorScheme={gptTheme ?? 'dark'} cssVariablesResolver={resolver}>
+      <App />
+    </MantineProvider>,
+  );
+
+  const buildIndex = async () => {
+    const allMsg = await getAllMessages();
+    const idx = new Index({ tokenize: 'forward' });
+    allMsg.forEach(m => idx.add(m.id, m.content));
+  };
+  buildIndex();
+};
+
+setTimeout(appendReactApp, 100);

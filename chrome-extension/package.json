@@ -1,7 +1,7 @@
 {
-  "name": "chrome-extension",
-  "version": "0.4.3",
-  "description": "chrome extension - core settings",
+  "name": "SuperGPT",
+  "version": "0.0.2",
+  "description": "SuperGPT - Supercharge your ChatGPT experience",
   "type": "module",
   "private": true,
   "sideEffects": false,
@@ -22,6 +22,7 @@
     "@extension/env": "workspace:*",
     "@extension/shared": "workspace:*",
     "@extension/storage": "workspace:*",
+    "dexie": "^4.0.11",
     "vite-plugin-node-polyfills": "^0.23.0",
     "webextension-polyfill": "^0.12.0"
   },

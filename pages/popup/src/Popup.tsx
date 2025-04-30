@@ -1,62 +1,72 @@
 import '@src/Popup.css';
-import { useStorage, withErrorBoundary, withSuspense } from '@extension/shared';
-import { exampleThemeStorage } from '@extension/storage';
-import { t } from '@extension/i18n';
-import { ToggleButton } from '@extension/ui';
+import { withErrorBoundary, withSuspense } from '@extension/shared';
+import { useEffect, useState } from 'react';
 
-const notificationOptions = {
-  type: 'basic',
-  iconUrl: chrome.runtime.getURL('icon-34.png'),
-  title: 'Injecting content script error',
-  message: 'You cannot inject script here!',
-} as const;
+const BASE_URL = `https://app.supergpt.chat`;
 
 const Popup = () => {
-  const theme = useStorage(exampleThemeStorage);
-  const isLight = theme === 'light';
-  const logo = isLight ? 'popup/logo_vertical.svg' : 'popup/logo_vertical_dark.svg';
-  const goGithubSite = () =>
-    chrome.tabs.create({ url: 'https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite' });
-
-  const injectContentScript = async () => {
-    const [tab] = await chrome.tabs.query({ currentWindow: true, active: true });
-
-    if (tab.url!.startsWith('about:') || tab.url!.startsWith('chrome:')) {
-      chrome.notifications.create('inject-error', notificationOptions);
-    }
-
-    await chrome.scripting
-      .executeScript({
-        target: { tabId: tab.id! },
-        files: ['/content-runtime/index.iife.js'],
-      })
-      .catch(err => {
-        // Handling errors related to other paths
-        if (err.message.includes('Cannot access a chrome:// URL')) {
-          chrome.notifications.create('inject-error', notificationOptions);
-        }
+  const [userStatus, setUserStatus] = useState('Free');
+  const getAccountStatus = async (email: string) => {
+    try {
+      const res = await fetch(`${BASE_URL}/user/valid`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       });
+      const data = await res.json();
+      const { valid } = data;
+      if (valid) {
+        return 'Pro';
+      } else {
+        return 'Free';
+      }
+    } catch (e) {
+      console.log(e);
+      return 'Free';
+    }
   };
 
+  const checkUserStatus = async () => {
+    const { userEmail } = await chrome.storage.local.get('userEmail');
+    if (userEmail) {
+      const plan = await getAccountStatus(userEmail);
+      setUserStatus(plan);
+    }
+  };
+
+  useEffect(() => {
+    checkUserStatus();
+  }, []);
+
   return (
-    <div className={`App ${isLight ? 'bg-slate-50' : 'bg-gray-800'}`}>
-      <header className={`App-header ${isLight ? 'text-gray-900' : 'text-gray-100'}`}>
-        <button onClick={goGithubSite}>
-          <img src={chrome.runtime.getURL(logo)} className="App-logo" alt="logo" />
-        </button>
-        <p>
-          Edit <code>pages/popup/src/Popup.tsx</code>
-        </p>
-        <button
-          className={
-            'font-bold mt-4 py-1 px-4 rounded shadow hover:scale-105 ' +
-            (isLight ? 'bg-blue-200 text-black' : 'bg-gray-700 text-white')
-          }
-          onClick={injectContentScript}>
-          Click to inject Content Script
-        </button>
-        <ToggleButton>{t('toggleTheme')}</ToggleButton>
-      </header>
+    <div style={{ backgroundColor: '#000628', height: '100%', padding: '1rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+          <img src={chrome.runtime.getURL('popup/supergpt-logo.png')} alt="SuperGPT Logo" height={30} width={30} />
+          <div style={{ color: 'white', fontWeight: 'bolder', fontSize: '20px', marginLeft: '10px' }}>SuperGPT</div>
+        </div>
+        <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'column', marginTop: '40px' }}>
+          <div style={{ color: 'white', fontSize: '15px' }}>You are on {userStatus} plan</div>
+          {userStatus === 'Free' && (
+            <div
+              onClick={() => {
+                window.open('https://supergpt.chat/#pricing');
+              }}
+              style={{
+                backgroundColor: '#fce643',
+                padding: '0.5rem',
+                borderRadius: '0.25rem',
+                marginTop: '1rem',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+              }}>
+              Upgrade to Pro
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
