@@ -24,7 +24,9 @@ const addMessageActionBar = () => {
       const assistantAnswer = aA.children[0] as HTMLDivElement;
       const answer = aA.querySelector("div[data-message-author-role='assistant']")!;
       const mId = answer.getAttribute('data-message-id')!;
-      const chatAlreadyPinned = pinnedChats[currentConvoId].some(({ messageId }) => messageId === mId);
+      const chatAlreadyPinned = pinnedChats[currentConvoId]
+        ? pinnedChats[currentConvoId].some(({ messageId }) => messageId === mId)
+        : false;
       const pinChatButton = document.createElement('button');
       pinChatButton.classList = 'pin-chat';
       pinChatButton.textContent = chatAlreadyPinned ? 'Unpin' : '📌 Pin';
@@ -39,15 +41,22 @@ const addMessageActionBar = () => {
         const pinnedChats = JSON.parse(localStorage.getItem('pinnedChats') ?? '{}');
         const answer = aA.querySelector("div[data-message-author-role='assistant']")!;
         const mId = answer.getAttribute('data-message-id')!;
-        const chatAlreadyPinned = pinnedChats[currentConvoId].some(({ messageId }) => messageId === mId);
+        const chatAlreadyPinned = pinnedChats[currentConvoId]
+          ? pinnedChats[currentConvoId].some(({ messageId }) => messageId === mId)
+          : false;
         if (chatAlreadyPinned) {
           pinnedChats[currentConvoId] = pinnedChats[currentConvoId].filter(
             ({ messageId }: { messageId: string }) => messageId !== mId,
           );
           pinChatButton.textContent = '📌 Pin';
         } else {
-          pinnedChats[currentConvoId].push({ messageId: mId, text: answer?.textContent?.slice(0, 50) });
-          pinChatButton.textContent = 'Unpin';
+          if (pinnedChats[currentConvoId]) {
+            pinnedChats[currentConvoId].push({ messageId: mId, text: answer?.textContent?.slice(0, 50) });
+            pinChatButton.textContent = 'Unpin';
+          } else {
+            pinnedChats[currentConvoId] = [{ messageId: mId, text: answer?.textContent?.slice(0, 50) }];
+            pinChatButton.textContent = 'Unpin';
+          }
         }
         localStorage.setItem('pinnedChats', JSON.stringify(pinnedChats));
         $('#update-pins').trigger('click');

@@ -48,7 +48,9 @@ const Popup = () => {
           <div style={{ color: 'white', fontWeight: 'bolder', fontSize: '20px', marginLeft: '10px' }}>SuperGPT</div>
         </div>
         <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'column', marginTop: '40px' }}>
-          <div style={{ color: 'white', fontSize: '15px' }}>You are on {userStatus} plan</div>
+          <div style={{ color: 'white', fontSize: '15px' }}>
+            You are on <span style={{ fontWeight: 'bold' }}>{userStatus === 'Free' ? 'Free' : '⚡️ Pro'} plan</span>
+          </div>
           {userStatus === 'Free' && (
             <div
               onClick={() => {
@@ -65,6 +67,13 @@ const Popup = () => {
               Upgrade to Pro
             </div>
           )}
+        </div>
+        <div style={{ color: 'white', marginTop: '3rem', textAlign: 'center', fontSize: '14px' }}>
+          Join SuperGPT{' '}
+          <a href="https://discord.gg/N48UUgWaVG" target="_blank" style={{ color: 'yellow', fontWeight: 'bold' }}>
+            Discord server
+          </a>{' '}
+          for support and updates.
         </div>
       </div>
     </div>
