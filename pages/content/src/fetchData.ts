@@ -91,7 +91,7 @@ const fetchAllGizmos = async () => {
   await fetchMessages(updatedConvos);
 };
 
-const fetchMessages = async (convoIds: string[]) => {
+export const fetchMessages = async (convoIds: string[]) => {
   const { authToken } = await chrome.storage.local.get('authToken');
 
   for (let i = 0; i < convoIds.length; i++) {

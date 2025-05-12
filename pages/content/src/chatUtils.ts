@@ -31,9 +31,13 @@ export const extractChatId = (text: string) => {
 };
 
 export const getTheme = () => {
-  const theme = window.matchMedia('(prefers-color-scheme: dark)');
-  if (theme.matches) {
-    return 'dark';
+  const gptTheme = localStorage.getItem('theme');
+  if (gptTheme === 'system') {
+    const theme = window.matchMedia('(prefers-color-scheme: dark)');
+    if (theme.matches) {
+      return 'dark';
+    }
+    return 'light';
   }
-  return 'light';
+  return gptTheme;
 };

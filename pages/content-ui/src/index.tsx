@@ -45,6 +45,9 @@ const appendReactApp = () => {
       '--maintine-button-text': '#000',
       '--mantine-button-modal-bg-color': '#000',
       '--mantine-button-modal-color': '#fff',
+      '--mantine-button-bg': '#000',
+      '--mantine-button-text-color': '#fff',
+      '--mantine-icon-color': '#fff',
     },
     dark: {
       '--mantine-button-background-color': '#ffffff12',
@@ -56,6 +59,9 @@ const appendReactApp = () => {
       '--mantine-button-modal-bg-color': '#fff',
       '--mantine-button-modal-color': '#000',
       '--maintine-button-text': '#fff',
+      '--mantine-button-bg': '#fff',
+      '--mantine-button-text-color': '#000',
+      '--mantine-icon-color': '#000',
     },
   });
 

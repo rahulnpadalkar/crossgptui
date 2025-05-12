@@ -1,17 +1,23 @@
-import { Button, Modal, Select, Title } from '@mantine/core';
+import { Modal, Title, Tabs } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 import { getConvoById, getMessagesByConvoId } from './db';
 import type { Message } from './db';
 import removeMd from 'remove-markdown';
+import { ExportFullChat } from './ExportFullChat';
+import { SelectedChatExport } from './SelectedChatExport';
+import { pdf } from '@react-pdf/renderer';
+import { MarkdownPdf } from './pdfFormat';
 
-const proLabels = ['JSON', 'Text', 'CSV', 'Markdown'];
-const freeLabels = ['JSON', 'Text', '💰 CSV', '💰 Markdown'];
+export interface ExportChatType {
+  role: string;
+  id: string;
+  content: string;
+}
 
 export const ExportChat = ({ withLimits }: { withLimits: boolean }) => {
   const [opened, { open, close }] = useDisclosure(false);
 
-  const [type, setType] = useState<string>('CSV');
   const [convoId, setConvoId] = useState<string>('');
 
   const exportAsCSV = (messages: Message[]) => {
@@ -30,6 +36,18 @@ export const ExportChat = ({ withLimits }: { withLimits: boolean }) => {
     return JSON.stringify(msgs, null, 2);
   };
 
+  const exportAsPDF = async (messages: Message[]) => {
+    let markdown = '';
+    messages.forEach(({ content, role }) => (markdown += `###${role}\n${content}`));
+    const blob = await pdf(<MarkdownPdf markdown={markdown} />).toBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'jsx-output.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const exportAsText = (messages: Message[]) => {
     let data = '';
     messages.forEach(({ role, content }) => {
@@ -46,9 +64,12 @@ export const ExportChat = ({ withLimits }: { withLimits: boolean }) => {
     return data;
   };
 
-  const exportChat = async () => {
+  const exportChat = async (onlyAnswers: boolean, type: string) => {
     const { title } = await getConvoById(convoId);
-    const msgs = await getMessagesByConvoId(convoId);
+    let msgs = await getMessagesByConvoId(convoId);
+    if (onlyAnswers) {
+      msgs = msgs.filter(({ role }) => role !== 'user');
+    }
     let data = null;
     if (type === 'CSV') {
       data = exportAsCSV(msgs);
@@ -91,18 +112,60 @@ export const ExportChat = ({ withLimits }: { withLimits: boolean }) => {
     });
   }, [opened]);
 
+  const exportPartialChat = async (type: string, msgs: Message[]) => {
+    const { title } = await getConvoById(convoId);
+    let data = null;
+    if (type === 'CSV') {
+      data = exportAsCSV(msgs);
+    } else if (type === 'JSON') {
+      data = exportAsJSON(msgs);
+    } else if (type === 'Text') {
+      data = exportAsText(msgs);
+    } else if (type === 'Markdown') {
+      data = exportAsMD(msgs);
+    } else if (type === 'PDF') {
+      data = await exportAsPDF(msgs);
+    } else {
+      return;
+    }
+    if (data) {
+      let blob = data;
+      if (type !== 'PDF') {
+        blob = new Blob([data], {
+          type: `${type === 'JSON' ? 'application' : 'text'}/${type === 'Text' ? 'plain' : type.toLowerCase()};charset=utf-8`,
+        });
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title}.${type === 'Text' ? 'txt' : type === 'Markdown' ? 'md' : type.toLowerCase()}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
   return (
     <>
       <div id="supergpt-export-chat-mdoal" onClick={open}></div>
-      <Modal withCloseButton={false} onClose={close} opened={opened}>
+      <Modal withCloseButton={false} onClose={close} opened={opened} size="xl">
         <Modal.Header>
           <Title order={4}>Export Chat</Title>
         </Modal.Header>
         <Modal.Body>
-          <Select data={withLimits ? freeLabels : proLabels} value={type} onChange={e => e && setType(e)} />
-          <Button variant="light" mt="md" onClick={exportChat}>
-            Export
-          </Button>
+          <Tabs variant="outline" radius="lg" defaultValue="full">
+            <Tabs.List>
+              <Tabs.Tab value="full">Export Full Chat</Tabs.Tab>
+              <Tabs.Tab value="partial">Selected Chat Export</Tabs.Tab>
+            </Tabs.List>
+            <Tabs.Panel value="full">
+              <ExportFullChat exportChat={exportChat} withLimits={withLimits} />
+            </Tabs.Panel>
+            <Tabs.Panel value="partial">
+              <SelectedChatExport exportChat={exportPartialChat} withLimits={withLimits} convoId={convoId} />
+            </Tabs.Panel>
+          </Tabs>
         </Modal.Body>
       </Modal>
     </>

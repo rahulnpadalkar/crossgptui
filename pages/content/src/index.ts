@@ -6,6 +6,7 @@ import { addPinnedConversationSection, pinConversations } from './pinConversatio
 import { addContainer } from './addContainer';
 import { extractChatId, getTheme, SyncStatus, updateStatus } from './chatUtils';
 import { addOrganizeChats } from './addOrganizeChats';
+import { addCustomListeners } from './customEventListeners';
 
 const addMessageActionBar = () => {
   const agentAnswers = document.querySelectorAll<HTMLDivElement>('.group\\/conversation-turn.agent-turn');
@@ -110,7 +111,7 @@ const addManageTags = () => {
 
 const addSearch = () => {
   const superGPTContainer = document.querySelector('.supergpt-sidebar-container');
-  const currentTheme = localStorage.getItem('theme');
+  const currentTheme = getTheme();
   const searchSVG = `<svg width="20px" height="20px" style="margin-right:10px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z" stroke="${currentTheme === 'light' ? 'black' : 'white'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>`;
   if (superGPTContainer?.querySelector('#supergpt-search') === null) {
     const containerDiv = $(
@@ -145,6 +146,7 @@ setInterval(() => {
   if (currentURL !== prevURL) {
     setTimeout(updateStatus, 2000);
     $('#update-pins').trigger('click');
+    window.dispatchEvent(new CustomEvent('update-annotations', { bubbles: false, cancelable: false }));
     prevURL = currentURL;
   }
 }, 500);
@@ -219,6 +221,17 @@ setTimeout(() => {
   populateDB();
 }, 5000);
 
+setTimeout(() => {
+  window.addEventListener('keydown', openQuestionsModal);
+}, 3000);
+
+const openQuestionsModal = e => {
+  if (e.altKey && e.key === 'Tab') {
+    e.preventDefault();
+    $('#supergpt-questions-list').trigger('click');
+  }
+};
+
 const addFolderIdStart = async () => {
   const folderData = await chrome.storage.local.get('folderData');
   if (folderData && Object.keys(folderData).length === 0) {
@@ -251,3 +264,5 @@ document.addEventListener('click', e => {
     e.preventDefault();
   }
 });
+
+addCustomListeners();
