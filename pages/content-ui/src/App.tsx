@@ -9,7 +9,7 @@ import { DownloadAction } from './modals/DownloadAudio';
 import { ExportChat } from './ExportChat';
 import { OrganizeFolders } from './modals/OrganizeFolders';
 // import { LabelChats } from './modals/LabelChats';
-// import { Questions } from './modals/Questions';
+import { Questions } from './modals/Questions';
 
 const chatRegex = /https:\/\/chatgpt\.com(?:\/g\/g-p-[a-z0-9-]+\/c|\/c)\/[a-z0-9-]+/;
 
@@ -60,7 +60,7 @@ export default function App() {
             {/* <LabelChats /> */}
             <PinnedChats withLimits={!paid} />
             <DownloadAction />
-            {/* <Questions /> */}
+            <Questions />
           </>
         )}
         <OrganizeFolders withLimits={!paid} />
