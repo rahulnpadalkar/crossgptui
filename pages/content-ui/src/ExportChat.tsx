@@ -6,8 +6,8 @@ import type { Message } from './db';
 import removeMd from 'remove-markdown';
 import { ExportFullChat } from './ExportFullChat';
 import { SelectedChatExport } from './SelectedChatExport';
-import { pdf } from '@react-pdf/renderer';
-import { MarkdownPdf } from './pdfFormat';
+// import { pdf } from '@react-pdf/renderer';
+// import { MarkdownPdf } from './pdfFormat';
 
 export interface ExportChatType {
   role: string;
@@ -36,17 +36,17 @@ export const ExportChat = ({ withLimits }: { withLimits: boolean }) => {
     return JSON.stringify(msgs, null, 2);
   };
 
-  const exportAsPDF = async (messages: Message[]) => {
-    let markdown = '';
-    messages.forEach(({ content, role }) => (markdown += `###${role}\n${content}`));
-    const blob = await pdf(<MarkdownPdf markdown={markdown} />).toBlob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'jsx-output.pdf';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  // const exportAsPDF = async (messages: Message[]) => {
+  // let markdown = '';
+  // messages.forEach(({ content, role }) => (markdown += `###${role}\n${content}`));
+  // const blob = await pdf(<MarkdownPdf markdown={markdown} />).toBlob();
+  // const url = URL.createObjectURL(blob);
+  // const a = document.createElement('a');
+  // a.href = url;
+  // a.download = 'jsx-output.pdf';
+  // a.click();
+  // URL.revokeObjectURL(url);
+  // };
 
   const exportAsText = (messages: Message[]) => {
     let data = '';
@@ -124,17 +124,14 @@ export const ExportChat = ({ withLimits }: { withLimits: boolean }) => {
     } else if (type === 'Markdown') {
       data = exportAsMD(msgs);
     } else if (type === 'PDF') {
-      data = await exportAsPDF(msgs);
+      // data = await exportAsPDF(msgs);
     } else {
       return;
     }
     if (data) {
-      let blob = data;
-      if (type !== 'PDF') {
-        blob = new Blob([data], {
-          type: `${type === 'JSON' ? 'application' : 'text'}/${type === 'Text' ? 'plain' : type.toLowerCase()};charset=utf-8`,
-        });
-      }
+      const blob = new Blob([data], {
+        type: `${type === 'JSON' ? 'application' : 'text'}/${type === 'Text' ? 'plain' : type.toLowerCase()};charset=utf-8`,
+      });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
